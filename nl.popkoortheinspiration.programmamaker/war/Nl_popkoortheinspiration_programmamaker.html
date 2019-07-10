@@ -1,0 +1,71 @@
+<!doctype html>
+<!-- The DOCTYPE declaration above will set the     -->
+<!-- browser's rendering engine into                -->
+<!-- "Standards Mode". Replacing this declaration   -->
+<!-- with a "Quirks Mode" doctype is not supported. -->
+
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+    <!--                                                               -->
+    <!-- Consider inlining CSS to reduce the number of requested files -->
+    <!--                                                               -->
+    <link type="text/css" rel="stylesheet" href="Nl_popkoortheinspiration_programmamaker.css">
+
+    <!--                                           -->
+    <!-- Any title is fine                         -->
+    <!--                                           -->
+    <title>Web Application Starter Project</title>
+    
+    <!--                                           -->
+    <!-- This script loads your compiled module.   -->
+    <!-- If you add any GWT meta tags, they must   -->
+    <!-- be added before this line.                -->
+    <!--                                           -->
+    <script type="text/javascript" language="javascript" src="nl_popkoortheinspiration_programmamaker/nl_popkoortheinspiration_programmamaker.nocache.js"></script>
+  </head>
+
+  <!--                                           -->
+  <!-- The body can have arbitrary html, or      -->
+  <!-- you can leave the body empty if you want  -->
+  <!-- to create a completely dynamic UI.        -->
+  <!--                                           -->
+<body>
+
+	<!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
+	<noscript>
+		<div
+			style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
+			Your web browser must have JavaScript enabled in order for this
+			application to display correctly.</div>
+	</noscript>
+	<p style="margin: auto; width: 600px;"> 
+	<img src="BriefhoofdNoBackground.png" alt="Briefhoofd" width=600px>
+	</p>
+	<h1>Programma maker</h1>
+
+	<p>Voeg nummers en pauzes toe aan het programma. De tijden die
+		getoond worden bij pauze hebben betrekking op het voorgaande blok.
+		Door een kunstmatige pauze na het laatste nummer toe te voegen kun je
+		ook nog zien hoe lang dit laatste blok is.</p>
+
+	<p>Nadat je tevreden bent druk op de 'Versturen' knop en krijgen de
+		commissieleden een mailtje met je programma.</p>
+	<table>
+		<tr>
+			<td><div id=replist></div></td>
+			<td><div class=tablebuttons id=contentbuttons></div></td>
+			<td><div id=setlist></div></td>
+			<td><div class=tablebuttons id=orderbuttons></div></td>
+		</tr>
+	</table>
+	<p>De totale lengte van dit optreden is:
+	<span id=totallength></span>
+	</p>
+	<p>
+	<span id=sendbutton></span>
+	</p>
+
+</body>
+</html>
