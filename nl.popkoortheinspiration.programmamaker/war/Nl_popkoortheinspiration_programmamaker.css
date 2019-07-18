@@ -49,3 +49,16 @@ body {
 	margin-top: 2px;
 	margin-bottom: 2px;
 }
+
+div#replist {
+	border: 1px;
+	border-style: solid;
+	padding: 5px;
+}
+
+div#setlist {
+	border: 1px;
+	border-style: solid;
+	padding: 5px;
+}
+

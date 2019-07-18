@@ -7,19 +7,20 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
+import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-import nl.popkoortheinspiration.programmamaker.shared.Setlist;
 import nl.popkoortheinspiration.programmamaker.shared.Song;
 
 /**
@@ -28,11 +29,11 @@ import nl.popkoortheinspiration.programmamaker.shared.Song;
 public class Nl_popkoortheinspiration_programmamaker implements EntryPoint {
 	Logger logger = Logger.getLogger("Com_inspiration.class");
 
-	private ListBox lbRepertoire = new ListBox();
-	private ListBox lbSetList = new ListBox();
-	private Setlist setlist = new Setlist(lbSetList);
-	private List<Song> repertoire = new ArrayList<Song>();
+	private RepertoireList repertoireList = new RepertoireList();
+	private Setlist setlist = new Setlist();
 	private IRepertoireDBAsync stockPriceSvc = GWT.create(IRepertoireDB.class);
+
+	private CellList<String> clRepertoire;
 
 	public void onModuleLoad() {
 		Button toSetlist = new Button("toevoegen");
@@ -41,16 +42,16 @@ public class Nl_popkoortheinspiration_programmamaker implements EntryPoint {
 		Button upButton = new Button("eerder");
 		Button downButton = new Button("later");
 		Button sendButton = new Button("Versturen");
-		lbRepertoire.setVisibleItemCount(30);
-		lbSetList.setVisibleItemCount(30);
+		
 		fillRepertoire();
 
 		toSetlist.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				logger.log(Level.FINEST, "toSetlist::onClick");
-				int idx = lbRepertoire.getSelectedIndex();
-				setlist.addSong(repertoire.get(idx));
+				Song song = repertoireList.getSelectedSong();
+				repertoireList.addSongPerformance(song);
+				setlist.addSong(song);
 				updateTotalLength();
 			}
 		});
@@ -58,8 +59,10 @@ public class Nl_popkoortheinspiration_programmamaker implements EntryPoint {
 		fromSetlist.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				int idx = lbSetList.getSelectedIndex();
-				setlist.remove(idx);
+				Song item = setlist.removeSelectedItem();
+				if (item != null) {
+					repertoireList.removeSongPerformance(item);
+				}
 				updateTotalLength();
 			}
 		});
@@ -67,16 +70,14 @@ public class Nl_popkoortheinspiration_programmamaker implements EntryPoint {
 		upButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				int idx = lbSetList.getSelectedIndex();
-				setlist.moveUp(idx);
+				setlist.moveUp();
 			}
 		});
 
 		downButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				int idx = lbSetList.getSelectedIndex();
-				setlist.moveDown(idx);
+				setlist.moveDown();
 			}
 		});
 
@@ -89,25 +90,25 @@ public class Nl_popkoortheinspiration_programmamaker implements EntryPoint {
 		});
 
 		sendButton.addClickHandler(new ClickHandler() {
-			
+
 			@Override
 			public void onClick(ClickEvent event) {
 				sendMail();
 			}
 		});
-		
-		lbSetList.addDoubleClickHandler(new DoubleClickHandler() {
-			
-			@Override
-			public void onDoubleClick(DoubleClickEvent event) {
-				int idx = lbSetList.getSelectedIndex();
-				setlist.remove(idx);
-				updateTotalLength();
-			}
-		});
-		
+
+//		lbSetList.addDoubleClickHandler(new DoubleClickHandler() {
+//
+//			@Override
+//			public void onDoubleClick(DoubleClickEvent event) {
+//				setlist.removeSelectedItem();
+//				updateTotalLength();
+//			}
+//		});
+
+/*
 		lbRepertoire.addDoubleClickHandler(new DoubleClickHandler() {
-			
+
 			@Override
 			public void onDoubleClick(DoubleClickEvent event) {
 				int idx = lbRepertoire.getSelectedIndex();
@@ -115,7 +116,7 @@ public class Nl_popkoortheinspiration_programmamaker implements EntryPoint {
 				updateTotalLength();
 			}
 		});
-		
+*/
 		VerticalPanel contentPanel = new VerticalPanel();
 		VerticalPanel orderPanel = new VerticalPanel();
 
@@ -125,9 +126,9 @@ public class Nl_popkoortheinspiration_programmamaker implements EntryPoint {
 		orderPanel.add(upButton);
 		orderPanel.add(downButton);
 
-		RootPanel.get("replist").add(lbRepertoire);
+		RootPanel.get("replist").add(repertoireList.getWidget());
 		RootPanel.get("contentbuttons").add(contentPanel);
-		RootPanel.get("setlist").add(lbSetList);
+		RootPanel.get("setlist").add(setlist.getWidget());
 		RootPanel.get("orderbuttons").add(orderPanel);
 		RootPanel.get("sendbutton").add(sendButton);
 
@@ -170,14 +171,10 @@ public class Nl_popkoortheinspiration_programmamaker implements EntryPoint {
 					}
 				}
 
-				for (Song song : regularSongs) {
-					repertoire.add(song);
-					lbRepertoire.addItem(song.getTitleAndDuration());
-				}
-				for (Song song : christmasSongs) {
-					repertoire.add(song);
-					lbRepertoire.addItem(song.getTitleAndDuration());
-				}
+				List<Song> repList = new ArrayList<Song>();
+				repList.addAll(regularSongs);
+				repList.addAll(christmasSongs);
+				repertoireList.initialize(repList);
 			}
 		};
 
@@ -186,9 +183,9 @@ public class Nl_popkoortheinspiration_programmamaker implements EntryPoint {
 
 	private void updateTotalLength() {
 		RootPanel.get("totallength").getElement().setInnerText(setlist.getDurationAsString());
-		
+
 	}
-	
+
 	private void sendMail() {
 	}
 }
